@@ -1,0 +1,108 @@
+# mal 01-14-16 via: https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
+
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
+
+*.iml
+
+## Directory-based project format:
+.idea/
+# if you remove the above rule, at least ignore the following:
+
+# User-specific stuff:
+# .idea/workspace.xml
+# .idea/tasks.xml
+# .idea/dictionaries
+# .idea/shelf
+
+# Sensitive or high-churn files:
+# .idea/dataSources.ids
+# .idea/dataSources.xml
+# .idea/sqlDataSources.xml
+# .idea/dynamic.xml
+# .idea/uiDesigner.xml
+
+# Gradle:
+# .idea/gradle.xml
+# .idea/libraries
+
+# Mongo Explorer plugin:
+# .idea/mongoSettings.xml
+
+## File-based project format:
+*.ipr
+*.iws
+
+## Plugin-specific files:
+
+# IntelliJ
+/out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+
+# mal clojurescript
+# https://github.com/clojure/clojurescript/blob/master/.gitignore
+
+*~
+.idea
+/.DS_Store
+.DS_Store
+/classes
+/lib
+/target
+closure
+/core.js
+/coreadvanced.js
+/coresimple.js
+/out
+*out
+.lein*
+/pom.xml
+.repl*
+*.swp
+*.zip
+clojurescript_release_*
+closure-release-*
+.lein-repl-history
+.nrepl-port
+.nrepl-repl-history
+builds
+.cljs*
+node_modules
+nashorn_code_cache
+src/main/cljs/cljs/core.aot.js
+src/main/cljs/cljs/core.aot.js.map
+src/main/cljs/cljs/core.cljs.cache.aot.edn
+
+# this particular one
+/devcards_out
+*devcards_out
+
+/cljsbuild-compiler-2
+/cljsbuild-compiler-3
+/figwheel_temp
+figwheel_server.log
+
+# standard clojure github gitignore duplicates commente dout
+pom.xml
+pom.xml.asc
+*jar
+/lib/
+/classes/
+/target/
+/checkouts/
+.lein-deps-sum
+# .lein-repl-history
+.lein-plugins/
+.lein-failures
+# .nrepl-port
