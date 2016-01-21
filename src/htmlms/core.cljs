@@ -17,6 +17,7 @@
 (enable-console-print!)
 
 ; mal figwheel for hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
+; when using this utilize lein cljsbuild once hostedcards
 ; (devcards.core/start-devcard-ui!)
 
 (defonce first-example-state (atom {:yourl "https://youtube.com/watch?v=2FpW1ctrDHE"}))
@@ -162,7 +163,7 @@
          ;"see [devcards](https://github.com/bhauman/devcards) for deets"
          (fn [data-atom _] (bmi-component data-atom))
          {:height 360 :width 640 :yurl "https://youtube.com/watch?v=2FpW1ctrDHE" :length "3m 45s"}
-         {:inspect-data true
+         {:inspect-data false
           :frame        true
           :history      true
           :heading      true
