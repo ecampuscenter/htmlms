@@ -4,6 +4,8 @@
     [reagent.core :as r]
     [sablono.core :as sab :include-macros true]
     [clojure.string :as cs]
+    [cognitect.transit :as t]
+    [cljs.reader :as reader]
     ; for hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
     ; [devcards.core :as dc]
     )
@@ -12,7 +14,8 @@
     [devcards.core :as dc :refer [defcard deftest]]
     ; mal hostedcards build alternatively swapp commenting on these two requries and above
     ; [devcards.core :refer [defcard]]
-    ))
+    )
+  (:import [goog.net XhrIo]))
 
 (enable-console-print!)
 
@@ -20,8 +23,14 @@
 ; when using this utilize lein cljsbuild once hostedcards
 ; (devcards.core/start-devcard-ui!)
 
-(defonce first-example-state (atom {:yourl "https://youtube.com/watch?v=2FpW1ctrDHE"}))
+; setting up youtube plumbing to read the video length
+#_(defn get-id-from-url [u]
+  (u)
+  )
 
+
+
+(def r (t/reader :json))
 
 (defcard
   "*BlackBoard HTML Generator*")
@@ -35,6 +44,45 @@
                         (apply clojure.set/intersection)
                         (apply max))))
 
+
+(defn xhr-data [url cb]
+  (XhrIo.send (str url)
+              (fn [f]
+                (let [xhr (.-target f)]
+                  (cb (.getResponseText xhr))))))
+
+#_(defn video-length [bmi-data]
+  (let [{:keys [height width bmi yurl] :as data} bmi-data
+        h (/ height 100)]
+        (xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
+                                (fn [e]
+                                  ;( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
+                                 (assoc data :length ( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])) )
+                                  ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
+                                  )   )))
+
+(xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=")
+          (fn [e]
+            ;( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
+            ;(swap! first-example-state update-in [:count] (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])) )
+            (defonce initial-length (atom {:initlength (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))}))
+            ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
+            )   )
+
+;#_(swap! first-example-state update-in [:count] xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
+;                                                        (fn [e]
+;                                                          ;( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
+;                                                          ;(swap! first-example-state update-in [:count] (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])) )
+;                                                          (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
+;                                                          ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
+;                                                          )   )
+
+
+
+
+;(defonce first-example-state (atom {:initlength "0m 0s"}))
+
+
 (defn calc-bmi [bmi-data]
   (let [{:keys [height width bmi yurl] :as data} bmi-data
         h (/ height 100)]
@@ -43,7 +91,9 @@
       (assoc data :width (* bmi h h)))
     ;   (assoc data :yurl yurl)
     )
-
+  ; (if (nil? length)
+  ;(assoc data :length video-length)
+  ;)
   )
 
 (defn slider [bmi-data param value min max]
@@ -71,6 +121,46 @@
        skinny "</a> (" length ")</p><p>To display video captions, start video and click <strong>CC</strong> in the video frame. To expand the video, use direct link above to open video in YouTube.</p>
 ")
   )
+
+
+
+
+(defn get-data [bmi-data param value min max]
+
+  (sab/html
+    [:input {:type      "text"
+             :min min
+             :max max
+             :style     {:width "100%"}
+             :on-change (fn [e]
+                                ; (swap! bmi-data assoc param (.-target.value  (.log js/console (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))    )   )    )
+                                ;(swap! bmi-data assoc :length (.-target.value (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])    )   )    )
+                                (swap! bmi-data assoc param (.-target.value e))
+                                ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
+                          #_(when (not= param :length)
+                            (swap! bmi-data assoc :length nil)
+                            )
+                          )}]))
+
+
+  ;#_(sab/html
+  ;
+  ;    #_(XhrIo.send (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
+  ;                  (fn [e] (swap! bmi-data assoc param (.getResponseText (.-target.value e)))
+  ;                    (when (not= param :bmi)
+  ;                      (swap! bmi-data assoc :bmi nil)
+  ;                      )
+  ;                    )
+  ;
+  ;                  )
+  ;
+  ;    #_[:textarea {:style {:width "100%"}
+  ;                  :value ((XhrIo.send (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
+  ;                                      (fn [e] (swap! bmi-data assoc param (.getResponseText (.-target.value e)))
+  ;                                        (when (not= param :bmi)
+  ;                                          (swap! bmi-data assoc :bmi nil)
+  ;                                          ))))}]
+  ;    ;))
 
 
 (defn htmlout [bmi-data param value width height min max length]
@@ -138,7 +228,8 @@
         (slider bmi-data :yurl yurl 0 100)]
        [:div
         [:span (str "time: " length)]
-        (slider bmi-data :length length 0 100)]
+        (get-data bmi-data :length length 0 100)
+        ]
        [:div
         [:span (str "width: " (int width) "px")]
         (slider bmi-data :width width 30 150)]
@@ -150,25 +241,35 @@
         [:span {:style {:color color}} diagnose]
         (slider bmi-data :bmi bmi 10 50)]
        [:div
-        [:span (str "html")]
+        [:span (str "html:")]
         (htmlout bmi-data :yurl yurl width height 10 50 length)
         ]
        [:div
-        [:span (str "preview")]
+        [:span (str "preview:")]
         (htmloutvisual bmi-data :yurl yurl width height 10 50 length)
         ]
-       ])))
+      ])))
 
 (defcard YouTube
          ;"see [devcards](https://github.com/bhauman/devcards) for deets"
          (fn [data-atom _] (bmi-component data-atom))
-         {:height 360 :width 640 :yurl "https://youtube.com/watch?v=2FpW1ctrDHE" :length "3m 45s"}
+         (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (:initlength @initial-length)} )
          {:inspect-data false
           :frame        true
           :history      true
           :heading      true
           })
 
+(defcard
+  example-counter
+  (fn [data-atom owner]
+    (sab/html
+      [:h3
+       "Example Counter w/Shared Initial Atom: "
+       (:initlength @data-atom)]))
+  initial-length)
+
+(.log js/console (:initlength @initial-length))
 
 
 (defn main []
@@ -177,6 +278,8 @@
   (if-let [node (.getElementById js/document "main-app-area")]
     (js/React.render (sab/html [:div ""]) node)
     ))
+
+
 
 (main)
 

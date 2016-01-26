@@ -9,7 +9,8 @@
                  [devcards "0.2.1-4"]
                  [sablono "0.5.3"]
                  #_[org.omcljs/om "0.9.0"]
-                 [reagent "0.5.1"]]
+                 [reagent "0.5.1"]
+                 [com.cognitect/transit-cljs "0.8.237"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.0-3"]]
