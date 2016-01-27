@@ -6,6 +6,8 @@
     [clojure.string :as cs]
     [cognitect.transit :as t]
     [cljs.reader :as reader]
+    ; for converting youtube duration
+    [cljs-time.coerce :as co]
     ; for hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
     ; [devcards.core :as dc]
     )
@@ -15,7 +17,8 @@
     ; mal hostedcards build alternatively swapp commenting on these two requries and above
     ; [devcards.core :refer [defcard]]
     )
-  (:import [goog.net XhrIo]))
+  (:import [goog.net XhrIo]
+           [goog.date Interval]))
 
 (enable-console-print!)
 
@@ -66,6 +69,8 @@
             ;( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
             ;(swap! first-example-state update-in [:count] (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])) )
             (defonce initial-length (atom {:initlength (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))}))
+
+            (defonce intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
             ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
             )   )
 
@@ -78,7 +83,7 @@
 ;                                                          )   )
 
 
-
+;(defonce intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
 
 ;(defonce first-example-state (atom {:initlength "0m 0s"}))
 
@@ -132,6 +137,7 @@
              :min min
              :max max
              :style     {:width "100%"}
+             :value value
              :on-change (fn [e]
                                 ; (swap! bmi-data assoc param (.-target.value  (.log js/console (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))    )   )    )
                                 ;(swap! bmi-data assoc :length (.-target.value (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])    )   )    )
@@ -250,10 +256,15 @@
         ]
       ])))
 
+
+
+
+
 (defcard YouTube
          ;"see [devcards](https://github.com/bhauman/devcards) for deets"
          (fn [data-atom _] (bmi-component data-atom))
-         (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (:initlength @initial-length)} )
+         ; (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (:initlength @initial-length)} )
+         (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (str (if (> intervalobj.hours 0) (str intervalobj.hours "h ") ) intervalobj.minutes "m " intervalobj.seconds "s") } )
          {:inspect-data false
           :frame        true
           :history      true
@@ -269,8 +280,12 @@
        (:initlength @data-atom)]))
   initial-length)
 
-(.log js/console (:initlength @initial-length))
-
+;(.log js/console (:initlength @initial-length))
+; aiming for Duration.parse(duration).getSeconds()
+;(.log js/console  (co/to-long (:initlength @initial-length)) )
+;(.log js/console (def intervalobj (Interval.fromIsoString (:initlength @initial-length)) )  )
+;(.log js/console  (.toIsoString intervalobj)  )
+;(.log js/console   intervalobj.minutes  )
 
 (defn main []
   ;; conditionally start the app based on wether the #main-app-area
