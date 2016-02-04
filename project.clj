@@ -11,7 +11,8 @@
                  #_[org.omcljs/om "0.9.0"]
                  [reagent "0.5.1"]
                  [com.cognitect/transit-cljs "0.8.237"]
-                 [com.andrewmcveigh/cljs-time "0.4.0"]]
+                 [com.cemerick/url "0.1.1"]
+                 [org.clojure/core.async "0.2.374"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.0-3"]]

@@ -7,13 +7,17 @@
     [cognitect.transit :as t]
     [cljs.reader :as reader]
     ; for converting youtube duration
-    [cljs-time.coerce :as co]
+    [cemerick.url :as cu]
+    [cljs.core.async :refer [chan close!]]
     ; for hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
     ; [devcards.core :as dc]
     )
   (:require-macros
+    ; for go/timeout
+    [cljs.core.async.macros :as m :refer [go]]
     ; mal figwheel see above hostedcards
     [devcards.core :as dc :refer [defcard deftest]]
+
     ; mal hostedcards build alternatively swapp commenting on these two requries and above
     ; [devcards.core :refer [defcard]]
     )
@@ -22,18 +26,30 @@
 
 (enable-console-print!)
 
+(defonce initial-length (atom {:initlength "0m 0s"}))
+(def intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
+
 ; mal figwheel for hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
 ; when using this utilize lein cljsbuild once hostedcards
 ; (devcards.core/start-devcard-ui!)
 
 ; setting up youtube plumbing to read the video length
-#_(defn get-id-from-url [u]
-  (u)
+(defn get-id-from-url [u]
+  "given a YouTube URL return the video’s ID"
+  (get (:query (cu/url u)) "v")
   )
 
+(println (get-id-from-url "https://www.youtube.com/watch?v=Wfj4g8zh2gk"))
 
 
 (def r (t/reader :json))
+
+; courtesy dr. nolan
+(defn timeout [ms]
+  (let [c (chan)]
+    (js/setTimeout (fn [] (close! c)) ms)
+    c))
+
 
 (defcard
   "*BlackBoard HTML Generator*")
@@ -54,63 +70,62 @@
                 (let [xhr (.-target f)]
                   (cb (.getResponseText xhr))))))
 
-#_(defn video-length [bmi-data]
-  (let [{:keys [height width bmi yurl] :as data} bmi-data
-        h (/ height 100)]
-        (xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
-                                (fn [e]
-                                  ;( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
-                                 (assoc data :length ( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])) )
-                                  ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
-                                  )   )))
-
-(xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=")
-          (fn [e]
-            ;( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
-            ;(swap! first-example-state update-in [:count] (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])) )
-            (defonce initial-length (atom {:initlength (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))}))
-
-            (defonce intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
-            ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
-            )   )
-
-;#_(swap! first-example-state update-in [:count] xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
-;                                                        (fn [e]
-;                                                          ;( -> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
-;                                                          ;(swap! first-example-state update-in [:count] (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"])) )
-;                                                          (-> (get-in (t/read r e) ["items" 0 "contentDetails" "duration"]))
-;                                                          ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
-;                                                          )   )
-
-
-;(defonce intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
-
-;(defonce first-example-state (atom {:initlength "0m 0s"}))
-
 
 (defn calc-bmi [bmi-data]
-  (let [{:keys [height width bmi yurl] :as data} bmi-data
+  (let [{:keys [height width bmi yurl length] :as data} bmi-data
         h (/ height 100)]
+    ;(assoc data :yurl yurl)
+    ; (if (nil? length)
+    ;  ((assoc data :length (str "xm xs")) (println "assoc data :length " data))
+    ;)
     (if (nil? bmi)
       (assoc data :bmi (/ (/ width (gcd width height) (/ height (gcd width height)))))
       (assoc data :width (* bmi h h)))
-    ;   (assoc data :yurl yurl)
+
     )
-  ; (if (nil? length)
-  ;(assoc data :length video-length)
-  ;)
   )
 
 (defn slider [bmi-data param value min max]
   (sab/html
-    [:input {:type      "text" :value value :min min :max max
+    [:input {:type      "text"
+             :value     value
+             :min       min
+             :max       max
              :style     {:width "100%"}
              :on-change (fn [e]
                           (swap! bmi-data assoc param (.-target.value e))
-                          (when (not= param :bmi)
-                            (swap! bmi-data assoc :bmi nil)
-                            )
-                          )}]))
+                          ; also swap out new video length
+                          (if (= param :yurl) (xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id="
+                                                             (get-id-from-url (.-target.value e))
+                                                             "&fields=items%2FcontentDetails%2Fduration&key={yourkeyhere}")
+                                                        ; (fn [g] (swap! initial-length update-in [:initlength] (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))
+                                                        (fn [g] (let [updlength (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))]
+
+                                                                  ; (go
+                                                                  (println "url: " value)
+                                                                  (println "can i get a new url? " (.-target.value e))
+                                                                  ; (<! (timeout 100))
+                                                                  (println "updlength: " updlength)
+                                                                  ; (.log js/console "intervalobj: " intervalobj)
+                                                                  ;(swap! intervalobj assoc )
+
+
+                                                                  (swap! bmi-data assoc :length (let [me (Interval.fromIsoString updlength)] (str (if (> me.hours 0) (str me.hours "h ") ) me.minutes "m " me.seconds "s")))
+                                                                  ;(swap! bmi-data assoc :length updlength)
+                                                                  (swap! initial-length assoc :initlength updlength)
+                                                                  (println ":initlength: " (:initlength @initial-length))
+                                                                  ;)
+
+                                                          ;(swap! intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
+                                                          ;(swap! bmi-data assoc :length (let [me (Interval.fromIsoString (:initlength @initial-length))] (str me.hours me.minutes me.seconds)))
+                                                          ;(swap! bmi-data assoc :length (let [me (Interval.fromIsoString udplength)] (str me.hours me.minutes me.seconds)))
+
+                                                          ))))
+             (println "initial-length: " initial-length)
+                        (when (not= param :bmi)
+                          (println (str "param:" param))
+                          (swap! bmi-data assoc :bmi nil)
+                          ))}]))
 
 
 (defn ifriendly [url]
@@ -120,7 +135,7 @@
 
 (defn fluff [skinny width height length]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
-<p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "\" frameBorder=\"0\" allowfullscreen></iframe></p>
+<p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0\" frameBorder=\"0\" allowfullscreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
 <a href=\"" skinny "\" title=\"Video\" target=\"_blank\">"
        skinny "</a> (" length ")</p><p>To display video captions, start video and click <strong>CC</strong> in the video frame. To expand the video, use direct link above to open video in YouTube.</p>
@@ -149,25 +164,6 @@
                           )}]))
 
 
-  ;#_(sab/html
-  ;
-  ;    #_(XhrIo.send (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
-  ;                  (fn [e] (swap! bmi-data assoc param (.getResponseText (.-target.value e)))
-  ;                    (when (not= param :bmi)
-  ;                      (swap! bmi-data assoc :bmi nil)
-  ;                      )
-  ;                    )
-  ;
-  ;                  )
-  ;
-  ;    #_[:textarea {:style {:width "100%"}
-  ;                  :value ((XhrIo.send (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=lm8oxC24QZc&fields=items%2FcontentDetails%2Fduration&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
-  ;                                      (fn [e] (swap! bmi-data assoc param (.getResponseText (.-target.value e)))
-  ;                                        (when (not= param :bmi)
-  ;                                          (swap! bmi-data assoc :bmi nil)
-  ;                                          ))))}]
-  ;    ;))
-
 
 (defn htmlout [bmi-data param value width height min max length]
   (sab/html
@@ -191,7 +187,7 @@
       [:strong "Play"] " icon to begin."]
      [:iframe {:width           width
                :height          height
-               :src             (ifriendly value)
+               :src             (ifriendly (str value "?rel=0"))
                :frameborder     0
                :allowfullscreen nil
                :on-change       (fn [e] (swap! bmi-data assoc param (.-target.value e))
@@ -219,6 +215,7 @@
   )
 
 (defn bmi-component [bmi-data]
+  (println "@bmi-data: " @bmi-data)
   (let [{:keys [width height bmi yurl length]} (calc-bmi @bmi-data)
         [color diagnose] (cond
                            ;(and (> bmi 0) (< bmi 1)) ["green" (str "approx ratio: 16:9. exact ratio:")]
@@ -233,15 +230,15 @@
         [:span (str "url: " yurl)]
         (slider bmi-data :yurl yurl 0 100)]
        [:div
-        [:span (str "time: " length)]
-        (get-data bmi-data :length length 0 100)
-        ]
-       [:div
         [:span (str "width: " (int width) "px")]
         (slider bmi-data :width width 30 150)]
        [:div
         [:span (str "height: " (int height) "px")]
         (slider bmi-data :height height 100 220)]
+       [:div
+        [:span (str "time: " length)]
+        (slider bmi-data :length length 0 100)
+        ]
        [:div
         [:span (str "ratio: " (cljs.pprint/cl-format nil "~,3f" bmi) " ")]
         [:span {:style {:color color}} diagnose]
@@ -264,14 +261,17 @@
          ;"see [devcards](https://github.com/bhauman/devcards) for deets"
          (fn [data-atom _] (bmi-component data-atom))
          ; (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (:initlength @initial-length)} )
-         (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (str (if (> intervalobj.hours 0) (str intervalobj.hours "h ") ) intervalobj.minutes "m " intervalobj.seconds "s") } )
+         ;(merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" } {:length (str (if (> intervalobj.hours 0) (str intervalobj.hours "h ") ) intervalobj.minutes "m " intervalobj.seconds "s") } )
+         {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" }
+         ; {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk"}
+         ; {:height 360 :width 640 }
          {:inspect-data false
           :frame        true
           :history      true
           :heading      true
           })
 
-(defcard
+#_(defcard
   example-counter
   (fn [data-atom owner]
     (sab/html
