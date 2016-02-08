@@ -9,7 +9,7 @@
     ; for converting youtube duration
     [cemerick.url :as cu]
     [cljs.core.async :refer [chan close!]]
-    ; for hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
+    ; for lein cljsbuild once hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
     ; [devcards.core :as dc]
     )
   (:require-macros
@@ -26,6 +26,7 @@
 
 (enable-console-print!)
 
+(defonce initial-title (atom {:inittitle "Like I Used to Do.mp4"}))
 (defonce initial-length (atom {:initlength "0m 0s"}))
 (def intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
 
@@ -44,7 +45,7 @@
 
 (def r (t/reader :json))
 
-; courtesy dr. nolan
+; courtesy dr. nolan - not used atm but came in handy during dev
 (defn timeout [ms]
   (let [c (chan)]
     (js/setTimeout (fn [] (close! c)) ms)
@@ -72,12 +73,9 @@
 
 
 (defn calc-bmi [bmi-data]
-  (let [{:keys [height width bmi yurl length] :as data} bmi-data
+  (let [{:keys [height width bmi yurl length title] :as data} bmi-data
         h (/ height 100)]
-    ;(assoc data :yurl yurl)
-    ; (if (nil? length)
-    ;  ((assoc data :length (str "xm xs")) (println "assoc data :length " data))
-    ;)
+
     (if (nil? bmi)
       (assoc data :bmi (/ (/ width (gcd width height) (/ height (gcd width height)))))
       (assoc data :width (* bmi h h)))
@@ -95,11 +93,11 @@
              :on-change (fn [e]
                           (swap! bmi-data assoc param (.-target.value e))
                           ; also swap out new video length
-                          (if (= param :yurl) (xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id="
+                          (if (= param :yurl) (xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2C+snippet&id="
                                                              (get-id-from-url (.-target.value e))
-                                                             "&fields=items%2FcontentDetails%2Fduration&key={yourkeyhere}")
+                                                             "&fields=items(contentDetails%2Csnippet)&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
                                                         ; (fn [g] (swap! initial-length update-in [:initlength] (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))
-                                                        (fn [g] (let [updlength (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))]
+                                                        (fn [g] (let [updlength (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"])) updtitle (-> (get-in (t/read r g) ["items" 0 "snippet" "title"]))]
 
                                                                   ; (go
                                                                   (println "url: " value)
@@ -114,6 +112,10 @@
                                                                   ;(swap! bmi-data assoc :length updlength)
                                                                   (swap! initial-length assoc :initlength updlength)
                                                                   (println ":initlength: " (:initlength @initial-length))
+
+                                                                  ; title
+                                                                  (swap! bmi-data assoc :title updtitle)
+
                                                                   ;)
 
                                                           ;(swap! intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
@@ -133,17 +135,13 @@
   (cs/replace-first (cs/replace-first url "watch?v=" "embed/") "https:" "")
   )
 
-(defn fluff [skinny width height length]
+(defn fluff [skinny width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0\" frameBorder=\"0\" allowfullscreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
-<a href=\"" skinny "\" title=\"Video\" target=\"_blank\">"
-       skinny "</a> (" length ")</p><p>To display video captions, start video and click <strong>CC</strong> in the video frame. To expand the video, use direct link above to open video in YouTube.</p>
-")
-  )
-
-
-
+<a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
+       title "</a> (" length ")</p><p>To display video captions, start video and click <strong>CC</strong> in the video frame. To expand the video, use direct link above to open video in YouTube.</p>
+"))
 
 (defn get-data [bmi-data param value min max]
 
@@ -163,14 +161,12 @@
                             )
                           )}]))
 
-
-
-(defn htmlout [bmi-data param value width height min max length]
+(defn htmlout [bmi-data param value width height min max length title]
   (sab/html
 
     [:textarea {:cols      max
                 :rows      min
-                :value     (fluff value width height length)
+                :value     (fluff value width height length title)
                 :style     {:width "100%"}
                 :on-change (fn [e] (swap! bmi-data assoc param (.-target.value e))
                              (when (not= param :bmi)
@@ -180,7 +176,7 @@
     ))
 
 
-(defn htmloutvisual [bmi-data param value width height min max length]
+(defn htmloutvisual [bmi-data param value width height min max length title]
   (sab/html
     [:div
      [:p {:style {:font-size ".8em"}} "Click the "
@@ -197,9 +193,9 @@
                                   )}]
      [:p {:style {:font-size ".8em"}} "If video doesn't appear, follow this direct link: "
       [:a {:href   value
-           :title  "Video"
+           :title  title
            :target "_blank"
-           } value] " (" length ")"
+           } title] " (" length ")"
       ]
      [:p {:style {:font-size ".8em"}} "To display video captions, start video and click " [:strong "CC"] " in the video
      frame. To expand the video, use direct link above to open video in YouTube."]
@@ -216,7 +212,7 @@
 
 (defn bmi-component [bmi-data]
   (println "@bmi-data: " @bmi-data)
-  (let [{:keys [width height bmi yurl length]} (calc-bmi @bmi-data)
+  (let [{:keys [width height bmi yurl length title]} (calc-bmi @bmi-data)
         [color diagnose] (cond
                            ;(and (> bmi 0) (< bmi 1)) ["green" (str "approx ratio: 16:9. exact ratio:")]
                            (and (> bmi .562) (< bmi .563)) ["green" (str "approx ratio: 16:9. exact ratio: " (width-ratio width height)  " by " (height-ratio width height) ".")]
@@ -236,8 +232,12 @@
         [:span (str "height: " (int height) "px")]
         (slider bmi-data :height height 100 220)]
        [:div
-        [:span (str "time: " length)]
+        [:span (str "length: " length)]
         (slider bmi-data :length length 0 100)
+        ]
+       [:div
+        [:span (str "Title: " title)]
+        (slider bmi-data :title title 0 100)
         ]
        [:div
         [:span (str "ratio: " (cljs.pprint/cl-format nil "~,3f" bmi) " ")]
@@ -245,24 +245,20 @@
         (slider bmi-data :bmi bmi 10 50)]
        [:div
         [:span (str "html:")]
-        (htmlout bmi-data :yurl yurl width height 10 50 length)
+        (htmlout bmi-data :yurl yurl width height 10 50 length title)
         ]
        [:div
         [:span (str "preview:")]
-        (htmloutvisual bmi-data :yurl yurl width height 10 50 length)
+        (htmloutvisual bmi-data :yurl yurl width height 10 50 length title)
         ]
       ])))
-
-
-
-
 
 (defcard YouTube
          ;"see [devcards](https://github.com/bhauman/devcards) for deets"
          (fn [data-atom _] (bmi-component data-atom))
          ; (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (:initlength @initial-length)} )
          ;(merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" } {:length (str (if (> intervalobj.hours 0) (str intervalobj.hours "h ") ) intervalobj.minutes "m " intervalobj.seconds "s") } )
-         {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" }
+         {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" :title "Like I used to do.mp4" }
          ; {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk"}
          ; {:height 360 :width 640 }
          {:inspect-data false
