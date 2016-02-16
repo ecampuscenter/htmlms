@@ -1,4 +1,4 @@
-(ns htmlms.core
+(ns htmlms.youtube
   (:require
     #_[om.core :as om :include-macros true]
     [reagent.core :as r]
@@ -9,30 +9,40 @@
     ; for converting youtube duration
     [cemerick.url :as cu]
     [cljs.core.async :refer [chan close!]]
-    ; for lein cljsbuild once hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
-    ; [devcards.core :as dc]
+    ;[cljsjs.tether]
+
+    ; see devcards as a standalone website https://github.com/bhauman/devcards
+    ; lein figwheel
+    ; -- do nothing --
+    ; lein cljsbuild once hostedcards
+    [devcards.core :as dc]
     )
   (:require-macros
     ; for go/timeout
     [cljs.core.async.macros :as m :refer [go]]
-    ; mal figwheel see above hostedcards
-    [devcards.core :as dc :refer [defcard deftest]]
 
-    ; mal hostedcards build alternatively swapp commenting on these two requries and above
-    ; [devcards.core :refer [defcard]]
+    ; lein figwheel
+    ; [devcards.core :as dc :refer [defcard deftest]]
+    ; lein cljsbuild once hostedcards
+    [devcards.core :refer [defcard]]
     )
   (:import [goog.net XhrIo]
            [goog.date Interval]))
 
 (enable-console-print!)
 
+; lein figwheel
+; -- do nothing --
+; lein cljsbuild once hostedcards
+(devcards.core/start-devcard-ui!)
+
+
+
 (defonce initial-title (atom {:inittitle "Like I Used to Do.mp4"}))
 (defonce initial-length (atom {:initlength "0m 0s"}))
 (def intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
 
-; mal figwheel for hostedcards builid see devcards as a standalone website https://github.com/bhauman/devcards
-; when using this utilize lein cljsbuild once hostedcards
-; (devcards.core/start-devcard-ui!)
+
 
 ; setting up youtube plumbing to read the video length
 (defn get-id-from-url [u]
@@ -140,7 +150,7 @@
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0\" frameBorder=\"0\" allowfullscreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
 <a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
-       title "</a> (" length ")</p><p>To display video captions, start video and click <strong>CC</strong> in the video frame. To expand the video, use direct link above to open video in YouTube.</p>
+       title "</a> (" length ")</p><p>Start the video to access more options in the video frame: to display the video captions, click <strong>CC</strong>. To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript, click YouTube, select ...More, then Transcript.</p>
 "))
 
 (defn get-data [bmi-data param value min max]
@@ -197,8 +207,9 @@
            :target "_blank"
            } title] " (" length ")"
       ]
-     [:p {:style {:font-size ".8em"}} "To display video captions, start video and click " [:strong "CC"] " in the video
-     frame. To expand the video, use direct link above to open video in YouTube."]
+     [:p {:style {:font-size ".8em"}} "Start the video to access more options in the video frame: to display the video captions, click " [:strong "CC"] ". 
+     To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript,
+     click YouTube, select ...More, then Transcript."]
      ]
     ))
 
@@ -254,13 +265,9 @@
       ])))
 
 (defcard YouTube
-         ;"see [devcards](https://github.com/bhauman/devcards) for deets"
+         ; see [devcards](https://github.com/bhauman/devcards) for deets
          (fn [data-atom _] (bmi-component data-atom))
-         ; (merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=BZWuYU2kcLg" } {:length (:initlength @initial-length)} )
-         ;(merge {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" } {:length (str (if (> intervalobj.hours 0) (str intervalobj.hours "h ") ) intervalobj.minutes "m " intervalobj.seconds "s") } )
-         {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" :title "Like I used to do.mp4" }
-         ; {:height 360 :width 640 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk"}
-         ; {:height 360 :width 640 }
+         {:height 315 :width 560 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" :title "Like I used to do.mp4" }
          {:inspect-data false
           :frame        true
           :history      true
