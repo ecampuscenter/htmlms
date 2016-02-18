@@ -47,8 +47,11 @@
 
 ; setting up ted talks plumbing to read the video length
 (defn get-id-from-url [u]
-  "given a YouTube URL return the video’s ID"
-  (get (:query (cu/url u)) "v")
+  "given a TED URL return the video’s ID"
+  ; youtube
+  ;(get (:query (cu/url u)) "v")
+  ; ted - for now just return original url... this might change if an API key is usesd.
+  u
   )
 
 (println (get-id-from-url "https://www.youtube.com/watch?v=Wfj4g8zh2gk"))
@@ -76,12 +79,20 @@
                         (apply clojure.set/intersection)
                         (apply max))))
 
+(defn receiver [event]
+  (let [response (.-target event)]
+    (.log js/console (.getResponseText response))))
 
 (defn xhr-data [url cb]
   (XhrIo.send (str url)
               (fn [f]
                 (let [xhr (.-target f)]
                   (cb (.getResponseText xhr))))))
+
+; till i can figure out cross origin policy, close chrome and start chrome like this:
+; /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security
+(defn xhr-data-ted [url content]
+  (XhrIo.send (str url) receiver "GET" content))
 
 
 (defn calc-bmi [bmi-data]
@@ -95,6 +106,8 @@
     )
   )
 
+
+
 (defn slider [bmi-data param value min max]
   (sab/html
     [:input {:type      "text"
@@ -105,11 +118,11 @@
              :on-change (fn [e]
                           (swap! bmi-data assoc param (.-target.value e))
                           ; also swap out new video length
-                          (if (= param :yurl) (xhr-data (str "https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2C+snippet&id="
-                                                             (get-id-from-url (.-target.value e))
-                                                             "&fields=items(contentDetails%2Csnippet)&key=AIzaSyAEqd5yONIxbtMZO-iF5t5aQ0Am1QmTPzs")
+                          (if (= param :yurl) (xhr-data-ted (str (get-id-from-url (.-target.value e)))
                                                         ; (fn [g] (swap! initial-length update-in [:initlength] (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))
-                                                        (fn [g] (let [updlength (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"])) updtitle (-> (get-in (t/read r g) ["items" 0 "snippet" "title"]))]
+                                                        (str "")
+                                                            #_(fn [g]
+                                                          (let [updlength (slurp (.-target.value e))]
 
                                                                   ; (go
                                                                   (println "url: " value)
@@ -126,15 +139,19 @@
                                                                   (println ":initlength: " (:initlength @initial-length))
 
                                                                   ; title
-                                                                  (swap! bmi-data assoc :title updtitle)
+                                                                  (swap! bmi-data assoc :title updlength)
 
                                                                   ;)
 
                                                           ;(swap! intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
                                                           ;(swap! bmi-data assoc :length (let [me (Interval.fromIsoString (:initlength @initial-length))] (str me.hours me.minutes me.seconds)))
                                                           ;(swap! bmi-data assoc :length (let [me (Interval.fromIsoString udplength)] (str me.hours me.minutes me.seconds)))
-
-                                                          ))))
+                                                                  ; (str g)
+                                                          )
+                                                          ; (println "g: " g)
+                                                          ;(.log js/console "e: "  (.-target.value e))
+                                                          )
+                                                            ))
              (println "initial-length: " initial-length)
                         (when (not= param :bmi)
                           (println (str "param:" param))
