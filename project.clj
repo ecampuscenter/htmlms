@@ -16,6 +16,7 @@
                  [org.webjars/bootstrap "4.0.0-alpha.2"]
                  ; trying to get bootstrap to work... get an error Uncaught Error: Bootstrap tooltips require Tether (http://github.hubspot.com/tether/)(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7
                  ; [cljsjs/tether "1.1.1-0"]
+                 [domina "1.0.3"]
                  ]
 
   :plugins [[lein-cljsbuild "1.1.1"]
