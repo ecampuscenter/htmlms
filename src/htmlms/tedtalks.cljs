@@ -115,19 +115,28 @@
                           (if (= param :yurl)
                             (xhr-data (str (get-id-from-url (.-target.value e)))
                                       (fn [g]
-                                        (let [response (.-target g)]
-                                          (.log js/console g)
-                                          ; video length selector
-                                          ; #player-hero > div.player-hero__contents > div.player-hero__details.player-hero__details--short > div > span:nth-child(2)
-                                          ; xpath
+                                        (let [response (.-target g)
+                                              updlength (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/div/span[1]"))
+                                              updtitle (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/h1/div[2]/span"))]
+
+                                          ; TED talk html
+                                          ; (.log js/console g)
+
+                                          ; video length xpath
                                           ; //*[@id="player-hero"]/div[1]/div[2]/div/span[1]
-                                          (.log js/console "xpath: "  (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/div/span[1]")))
-                                          (println "response: " response)
-                                          (println "url: " value)
-                                          (println "can i get a new url? " (.-target.value e)))
-                                        ; (println "g: " g)
-                                        ;(.log js/console "e: "  (.-target.value e))
-                                        )))
+                                          ; (.log js/console "xpath: "  (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/div/span[1]")))
+
+                                          (swap! bmi-data assoc :length updlength)
+                                          (swap! initial-length assoc :initlength updlength)
+                                          (println ":initlength: " (:initlength @initial-length))
+
+                                          ; title
+                                          (swap! bmi-data assoc :title updtitle)
+
+                                          ; (println "response: " response)
+                                          ; (println "url: " value)
+                                          ;(println "can i get a new url? " (.-target.value e))
+                                          ))))
                           (println "initial-length: " initial-length)
                           (when (not= param :bmi)
                             (println (str "param:" param))
