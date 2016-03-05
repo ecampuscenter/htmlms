@@ -126,6 +126,15 @@
                                           ; //*[@id="player-hero"]/div[1]/div[2]/div/span[1]
                                           ; (.log js/console "xpath: "  (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/div/span[1]")))
 
+                                          ; author
+                                          ; <span class="player-hero__speaker__content">Patricia Burchat:</span>
+                                          ; //*[@id="player-hero"]/div[1]/div[2]/h1/div[1]/span
+
+                                          ; title
+                                          ; <span class="player-hero__title__content">Shedding light on dark matter</span>
+                                          ; //*[@id="player-hero"]/div[1]/div[2]/h1/div[2]/span
+
+
                                           (swap! bmi-data assoc :length updlength)
                                           (swap! initial-length assoc :initlength updlength)
                                           (println ":initlength: " (:initlength @initial-length))
