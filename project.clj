@@ -16,8 +16,8 @@
                  [org.webjars/bootstrap "4.0.0-alpha.2"]
                  ; trying to get bootstrap to work... get an error Uncaught Error: Bootstrap tooltips require Tether (http://github.hubspot.com/tether/)(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7
                  ; [cljsjs/tether "1.1.1-0"]
-                 [domina "1.0.3"]
-                 ]
+                 [domina "1.0.3"]]
+
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.0-3"]]
@@ -30,12 +30,12 @@
   :cljsbuild {
               :builds [{:id "devcards"
                         :source-paths ["src"]
-                        :figwheel { :devcards true } ;; <- note this
+                        :figwheel { :devcards true} ;; <- note this
                         :compiler { :main       "htmlms.start-ui"
                                     :asset-path "js/compiled/devcards_out"
                                     :output-to  "resources/public/js/compiled/htmlms_devcards.js"
                                     :output-dir "resources/public/js/compiled/devcards_out"
-                                    :source-map-timestamp true }}
+                                    :source-map-timestamp true}}
                        {:id "dev"
                         :source-paths ["src"]
                         :figwheel true
@@ -43,7 +43,7 @@
                                    :asset-path "js/compiled/out"
                                    :output-to  "resources/public/js/compiled/htmlms.js"
                                    :output-dir "resources/public/js/compiled/out"
-                                   :source-map-timestamp true }}
+                                   :source-map-timestamp true}}
                        {:id "prod"
                         :source-paths ["src"]
                         :compiler {:main       "htmlms.start-ui"
@@ -58,4 +58,4 @@
                                    :output-to  "resources/public/js/compiled/htmlms.js"
                                    :optimizations :advanced}}]}
 
-  :figwheel { :css-dirs ["resources/public/css"] })
+  :figwheel { :css-dirs ["resources/public/css"]})

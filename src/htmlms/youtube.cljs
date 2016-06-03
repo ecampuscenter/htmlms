@@ -15,8 +15,8 @@
     ; lein figwheel
     ; -- do nothing --
     ; lein cljsbuild once hostedcards
-    [devcards.core :as dc]
-    )
+    [devcards.core :as dc])
+
   (:require-macros
     ; for go/timeout
     [cljs.core.async.macros :as m :refer [go]]
@@ -24,8 +24,8 @@
     ; lein figwheel
     ; [devcards.core :as dc :refer [defcard deftest]]
     ; lein cljsbuild once hostedcards
-    [devcards.core :refer [defcard]]
-    )
+    [devcards.core :refer [defcard]])
+
   (:import [goog.net XhrIo]
            [goog.date Interval]))
 
@@ -40,15 +40,15 @@
 
 (defonce initial-title (atom {:inittitle "Like I Used to Do.mp4"}))
 (defonce initial-length (atom {:initlength "0m 0s"}))
-(def intervalobj (Interval.fromIsoString (:initlength @initial-length)) )
+(def intervalobj (Interval.fromIsoString (:initlength @initial-length)))
 
 
 
 ; setting up youtube plumbing to read the video length
 (defn get-id-from-url [u]
   "given a YouTube URL return the video’s ID"
-  (get (:query (cu/url u)) "v")
-  )
+  (get (:query (cu/url u)) "v"))
+
 
 (println (get-id-from-url "https://www.youtube.com/watch?v=Wfj4g8zh2gk"))
 
@@ -136,21 +136,21 @@
              (println "initial-length: " initial-length)
                         (when (not= param :bmi)
                           (println (str "param:" param))
-                          (swap! bmi-data assoc :bmi nil)
-                          ))}]))
+                          (swap! bmi-data assoc :bmi nil)))}]))
+
 
 
 (defn ifriendly [url]
   "create iframible youtube link for display http://stackoverflow.com/questions/20498831/refused-to-display-in-a-frame-because-it-set-x-frame-options-to-sameorigin"
-  (cs/replace-first (cs/replace-first url "watch?v=" "embed/") "https:" "")
-  )
+  (cs/replace-first (cs/replace-first url "watch?v=" "embed/") "https:" ""))
+
 
 (defn fluff [skinny width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0\" frameBorder=\"0\" allowfullscreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
 <a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
-       title "</a> (" length ")</p><p>Start the video to access more options in the video frame: to display the video captions, click <strong>CC</strong>. To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript, click YouTube, select ...More, then Transcript.</p>
+title "</a> (" length ")</p><p>Start the video to access more options in the video frame: to display the video captions, click <strong>CC</strong>. To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript, click YouTube, select ...More, then Transcript.</p>
 "))
 
 (defn get-data [bmi-data param value min max]
@@ -180,10 +180,10 @@
                 :style     {:width "100%"}
                 :on-change (fn [e] (swap! bmi-data assoc param (.-target.value e))
                              (when (not= param :bmi)
-                               (swap! bmi-data assoc :bmi nil)
-                               )
-                             )}]
-    ))
+                               (swap! bmi-data assoc :bmi nil)))}]))
+
+
+
 
 
 (defn htmloutvisual [bmi-data param value width height min max length title]
@@ -198,9 +198,9 @@
                :allowfullscreen nil
                :on-change       (fn [e] (swap! bmi-data assoc param (.-target.value e))
                                   (when (not= param :bmi)
-                                    (swap! bmi-data assoc :bmi nil)
-                                    )
-                                  )}]
+                                    (swap! bmi-data assoc :bmi nil)))}]
+
+
      [:p {:style {:font-size ".8em"}} "If video doesn't appear, follow this direct link: "
       [:a {:href   value
            :title  title
@@ -214,12 +214,12 @@
     ))
 
 (defn height-ratio [w h]
-  (/ h (gcd w h))
-  )
+  (/ h (gcd w h)))
+
 
 (defn width-ratio [w h]
-  (/ w (gcd w h))
-  )
+  (/ w (gcd w h)))
+
 
 (defn bmi-component [bmi-data]
   (println "@bmi-data: " @bmi-data)
@@ -229,7 +229,7 @@
                            (and (> bmi .562) (< bmi .563)) ["green" (str "approx ratio: 16:9. exact ratio: " (width-ratio width height)  " by " (height-ratio width height) ".")]
                            (and (> bmi .74) (< bmi .76)) ["inherit" (str "approx ratio: 4:3. exact ratio: " (width-ratio width height) " by " (height-ratio width height) ".")]
                            ; (< bmi 30) ["orange" "overweight"]
-                           :else ["red" (str "non-standard ratio " (width-ratio width height)  " by " (height-ratio width height) ".") ])]
+                           :else ["red" (str "non-standard ratio " (width-ratio width height)  " by " (height-ratio width height) ".")])]
     (sab/html
       [:div
        [:h3 "Parameters"]
@@ -244,35 +244,34 @@
         (slider bmi-data :height height 100 220)]
        [:div
         [:span (str "length: " length)]
-        (slider bmi-data :length length 0 100)
-        ]
+        (slider bmi-data :length length 0 100)]
+
        [:div
         [:span (str "Title: " title)]
-        (slider bmi-data :title title 0 100)
-        ]
+        (slider bmi-data :title title 0 100)]
+
        [:div
         [:span (str "ratio: " (cljs.pprint/cl-format nil "~,3f" bmi) " ")]
         [:span {:style {:color color}} diagnose]
         (slider bmi-data :bmi bmi 10 50)]
        [:div
         [:span (str "html:")]
-        (htmlout bmi-data :yurl yurl width height 10 50 length title)
-        ]
+        (htmlout bmi-data :yurl yurl width height 10 50 length title)]
+
        [:div
         [:span (str "preview:")]
-        (htmloutvisual bmi-data :yurl yurl width height 10 50 length title)
-        ]
-      ])))
+        (htmloutvisual bmi-data :yurl yurl width height 10 50 length title)]])))
+
+
 
 (defcard YouTube
          ; see [devcards](https://github.com/bhauman/devcards) for deets
          (fn [data-atom _] (bmi-component data-atom))
-         {:height 315 :width 560 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" :title "Like I used to do.mp4" }
+         {:height 315 :width 560 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" :title "Like I used to do.mp4"}
          {:inspect-data false
           :frame        true
           :history      true
-          :heading      true
-          })
+          :heading      true})
 
 #_(defcard
   example-counter
@@ -294,8 +293,8 @@
   ;; conditionally start the app based on wether the #main-app-area
   ;; node is on the page
   (if-let [node (.getElementById js/document "main-app-area")]
-    (js/React.render (sab/html [:div ""]) node)
-    ))
+    (js/React.render (sab/html [:div ""]) node)))
+
 
 
 

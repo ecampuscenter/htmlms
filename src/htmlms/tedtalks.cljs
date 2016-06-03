@@ -15,8 +15,8 @@
     ; rlwrap lein figwheel
     ; -- do nothing --
     ; lein cljsbuild once hostedcards
-    [devcards.core :as dc]
-    )
+    [devcards.core :as dc])
+
   (:require-macros
     ; for go/timeout
     [cljs.core.async.macros :as m :refer [go]]
@@ -24,8 +24,8 @@
     ; rlwrap lein figwheel
     ; [devcards.core :as dc :refer [defcard deftest]]
     ; lein cljsbuild once hostedcards
-    [devcards.core :refer [defcard]]
-    )
+    [devcards.core :refer [defcard]])
+
   (:import [goog.net XhrIo]
            [goog.date Interval]))
 
@@ -97,10 +97,10 @@
 
     (if (nil? bmi)
       (assoc data :bmi (/ (/ width (gcd width height) (/ height (gcd width height)))))
-      (assoc data :width (* bmi h h)))
+      (assoc data :width (* bmi h h)))))
 
-    )
-  )
+
+
 
 (defn slider [bmi-data param value min max]
   (sab/html
@@ -134,6 +134,9 @@
                                           ; <span class="player-hero__title__content">Shedding light on dark matter</span>
                                           ; //*[@id="player-hero"]/div[1]/div[2]/h1/div[2]/span
 
+                                          ; hmm dont know where else to put this but I now see:
+                                          ; <meta content='PT12M20S' itemprop='duration'>
+                                          ; in view-source:http://www.ted.com/talks/daniel_levitin_how_to_stay_calm_when_you_know_you_ll_be_stressed
 
                                           (swap! bmi-data assoc :length updlength)
                                           (swap! initial-length assoc :initlength updlength)
@@ -149,20 +152,20 @@
                           (println "initial-length: " initial-length)
                           (when (not= param :bmi)
                             (println (str "param:" param))
-                            (swap! bmi-data assoc :bmi nil)
-                            ))}]))
+                            (swap! bmi-data assoc :bmi nil)))}]))
+
 
 (defn ifriendly [url]
   "create iframible ted link"
-  (cs/replace-first (cs/replace-first url "www.ted.com/talks" "embed-ssl.ted.com/talks/lang/en") "https:" "")
-  )
+  (cs/replace-first (cs/replace-first (cs/replace-first url "www.ted.com/talks" "embed-ssl.ted.com/talks/lang/en") "https:" "") "http:" ""))
+
 
 (defn fluff [skinny width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "\" frameBorder=\"0\" scrolling=\"no\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
 <a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
-       title "</a> (" length ")</p><p>Start the video to access more options in the video frame: To display the video captions, click Subtitles. To expand the video, use the direct link above to open video on the TED website, and click the <strong>Full Screen</strong> icon. To navigate the video using the transcript, click <strong>Transcript</strong>.</p>
+title "</a> (" length ")</p><p>Start the video to access more options in the video frame. To display the video captions, click on the <strong>red speech bubble</strong> with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the direct link above to open video on the TED website, and click the <strong>Full Screen</strong> icon. To navigate the video using the transcript, click <strong>Transcript</strong>.</p>
 "))
 
 (defn get-data [bmi-data param value min max]
@@ -179,9 +182,9 @@
                           (swap! bmi-data assoc param (.-target.value e))
                           ; (swap! bmi-data assoc param (.-target.value  (.parse js/JSON e)    ))
                           #_(when (not= param :length)
-                              (swap! bmi-data assoc :length nil)
-                              )
-                          )}]))
+                              (swap! bmi-data assoc :length nil)))}]))
+
+
 
 (defn htmlout [bmi-data param value width height min max length title]
   (sab/html
@@ -192,10 +195,10 @@
                 :style     {:width "100%"}
                 :on-change (fn [e] (swap! bmi-data assoc param (.-target.value e))
                              (when (not= param :bmi)
-                               (swap! bmi-data assoc :bmi nil)
-                               )
-                             )}]
-    ))
+                               (swap! bmi-data assoc :bmi nil)))}]))
+
+
+
 
 
 (defn htmloutvisual [bmi-data param value width height min max length title]
@@ -210,28 +213,28 @@
                :allowfullscreen nil
                :on-change       (fn [e] (swap! bmi-data assoc param (.-target.value e))
                                   (when (not= param :bmi)
-                                    (swap! bmi-data assoc :bmi nil)
-                                    )
-                                  )}]
+                                    (swap! bmi-data assoc :bmi nil)))}]
+
+
      [:p {:style {:font-size ".8em"}} "If video doesn't appear, follow this direct link: "
       [:a {:href   value
            :title  title
            :target "_blank"
            } title] " (" length ")"
       ]
-     [:p {:style {:font-size ".8em"}} "Start the video to access more options in the video frame: To display the video captions,
-     click Subtitles. To expand the video, use the direct link above to open video on the TED website, and click the " [:strong "Full Screen"] " icon.
-     To navigate the video using the transcript, click " [:strong " Transcript"] "."]
-     ]
-    ))
+     [:p {:style {:font-size ".8em"}} "Start the video to access more options in the video frame. To display the video captions,
+     click on the " [:strong "red speech bubble"] " with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the direct link above to open video on the TED website, and click the " [:strong "Full Screen"] " icon.
+     To navigate the video using the transcript, click " [:strong " Transcript"] "."]]))
+
+
 
 (defn height-ratio [w h]
-  (/ h (gcd w h))
-  )
+  (/ h (gcd w h)))
+
 
 (defn width-ratio [w h]
-  (/ w (gcd w h))
-  )
+  (/ w (gcd w h)))
+
 
 (defn bmi-component [bmi-data]
   (println "@bmi-data: " @bmi-data)
@@ -256,25 +259,25 @@
         (slider bmi-data :height height 100 220)]
        [:div
         [:span (str "length: " length)]
-        (slider bmi-data :length length 0 100)
-        ]
+        (slider bmi-data :length length 0 100)]
+
        [:div
         [:span (str "Title: " title)]
-        (slider bmi-data :title title 0 100)
-        ]
+        (slider bmi-data :title title 0 100)]
+
        [:div
         [:span (str "ratio: " (cljs.pprint/cl-format nil "~,3f" bmi) " ")]
         [:span {:style {:color color}} diagnose]
         (slider bmi-data :bmi bmi 10 50)]
        [:div
         [:span (str "html:")]
-        (htmlout bmi-data :yurl yurl width height 10 50 length title)
-        ]
+        (htmlout bmi-data :yurl yurl width height 10 50 length title)]
+
        [:div
         [:span (str "preview:")]
-        (htmloutvisual bmi-data :yurl yurl width height 10 50 length title)
-        ]
-       ])))
+        (htmloutvisual bmi-data :yurl yurl width height 10 50 length title)]])))
+
+
 
 (defcard ©TED-CC-BY-NC-ND-3.0
          ;"see [devcards](https://github.com/bhauman/devcards) for deets"
@@ -283,8 +286,8 @@
          {:inspect-data false
           :frame        true
           :history      true
-          :heading      true
-          })
+          :heading      true})
+
 
 #_(defcard
     example-counter
@@ -306,8 +309,8 @@
   ;; conditionally start the app based on wether the #main-app-area
   ;; node is on the page
   (if-let [node (.getElementById js/document "main-app-area")]
-    (js/React.render (sab/html [:div ""]) node)
-    ))
+    (js/React.render (sab/html [:div ""]) node)))
+
 
 
 
