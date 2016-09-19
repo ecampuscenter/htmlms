@@ -109,3 +109,5 @@ pom.xml.asc
 .lein-plugins/
 .lein-failures
 # .nrepl-port
+dev-resources/
+resources/public/js/compiled/hostedcards/
