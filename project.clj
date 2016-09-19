@@ -54,8 +54,9 @@
                         :source-paths ["src"]
                         :compiler {:main "htmlms.start-ui"
                                    :devcards true ; <- note this
-                                   :asset-path "js/compiled/out"
+                                   :asset-path "js/compiled/hostedcards"
                                    :output-to  "resources/public/js/compiled/htmlms.js"
+                                   :output-dir "resources/public/js/compiled/hostedcards"
                                    :optimizations :advanced}}]}
 
   :figwheel { :css-dirs ["resources/public/css"]})
