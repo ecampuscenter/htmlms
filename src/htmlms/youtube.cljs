@@ -12,6 +12,8 @@
     ;[cljsjs.tether]
 
     ; see devcards as a standalone website https://github.com/bhauman/devcards
+    ; remember to run lein figwheel and then browse to
+    ; http://localhost:3449/cards.html
     ; lein figwheel
     ; -- do nothing --
     ; lein cljsbuild once hostedcards
@@ -47,7 +49,8 @@
 ; setting up youtube plumbing to read the video length
 (defn get-id-from-url [u]
   "given a YouTube URL return the video’s ID"
-  (get (:query (cu/url u)) "v"))
+  ;(cs/replace-first u "youtu.be/" "www.youtube.com/watch?v=")
+  (get (:query (cu/url (cs/replace-first u "youtu.be/" "www.youtube.com/watch?v="))) "v"))
 
 
 (println (get-id-from-url "https://www.youtube.com/watch?v=Wfj4g8zh2gk"))
@@ -142,7 +145,17 @@
 
 (defn ifriendly [url]
   "create iframible youtube link for display http://stackoverflow.com/questions/20498831/refused-to-display-in-a-frame-because-it-set-x-frame-options-to-sameorigin"
-  (cs/replace-first (cs/replace-first url "watch?v=" "embed/") "https:" ""))
+  ; need to fix this case https://youtu.be/SmM0653YvXU
+  ; it redirects to https://www.youtube.com/watch?v=SmM0653YvXU&feature=youtu.be
+  ; which breaks it becasue of the &feature=youtu.be
+  ;(cs/replace-first url "youtu.be/" "www.youtube.com/watch?v=")
+  ;(cs/replace-first (cs/replace-first url "watch?v=" "embed/") "https:" "")
+  (-> url
+      (cs/replace-first "youtu.be/" "www.youtube.com/watch?v=")
+      (cs/replace-first "watch?v=" "embed/")
+      (cs/replace-first "https:" "")
+      )
+  )
 
 
 (defn fluff [skinny width height length title]
@@ -235,7 +248,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
        [:h3 "Parameters"]
        [:div
         [:span (str "url: " yurl)]
-        (slider bmi-data :yurl yurl 0 100)]
+        (slider bmi-data :yurl  (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=") 0 100)]
        [:div
         [:span (str "width: " (int width) "px")]
         (slider bmi-data :width width 30 150)]
