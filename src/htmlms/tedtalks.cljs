@@ -87,6 +87,8 @@
 
 ; till i can figure out cross origin policy, close chrome and start chrome like this:
 ; /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security
+; alternatively load this chrome plugin https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi
+; and addd exemptions for "*://www.ted.com/*" without the quotes. "*://localhost/* for testing...
 (defn xhr-data-ted [url content]
   (XhrIo.send (str url) receiver "GET" content))
 
@@ -98,8 +100,6 @@
     (if (nil? bmi)
       (assoc data :bmi (/ (/ width (gcd width height) (/ height (gcd width height)))))
       (assoc data :width (* bmi h h)))))
-
-
 
 
 (defn slider [bmi-data param value min max]
@@ -165,7 +165,7 @@
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "\" frameBorder=\"0\" scrolling=\"no\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
 <a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
-title "</a> (" length ")</p><p>Start the video to access more options in the video frame. To display the video captions, click on the <strong>red speech bubble</strong> with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the direct link above to open video on the TED website, and click the <strong>Full Screen</strong> icon. To navigate the video using the transcript, click <strong>Transcript</strong>.</p>
+title "</a> (" length ")</p><p>Start the video to access more options in the video frame. To display the video captions, click on the <strong>gray speech bubble</strong> with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the <strong>Full Screen</strong> icon in the bottom right-hand corner or use the direct link above to open the video on the TED website. To navigate the video using the transcript, click <strong>Interactive Transcript</strong>.</p>
 "))
 
 (defn get-data [bmi-data param value min max]
@@ -223,8 +223,8 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
            } title] " (" length ")"
       ]
      [:p {:style {:font-size ".8em"}} "Start the video to access more options in the video frame. To display the video captions,
-     click on the " [:strong "red speech bubble"] " with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the direct link above to open video on the TED website, and click the " [:strong "Full Screen"] " icon.
-     To navigate the video using the transcript, click " [:strong " Transcript"] "."]]))
+     click on the " [:strong "gray speech bubble"] " with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the " [:strong "Full Screen"] " icon in the bottom right-hand corner or use the direct link above to open the video on the TED website.
+     To navigate the video using the transcript, click " [:strong "Interactive Transcript"] "."]]))
 
 
 
