@@ -4,16 +4,16 @@
   :license {:name "Creative Commons Attribution 4.0 International License"
             :url "http://creativecommons.org/licenses/by/4.0/"}
 
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.170"]
-                 [devcards "0.2.1-4"]
-                 [sablono "0.5.3"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojurescript "1.9.229"]
+                 [devcards "0.2.1-7"]
+                 [sablono "0.7.4"]
                  #_[org.omcljs/om "0.9.0"]
-                 [reagent "0.5.1"]
-                 [com.cognitect/transit-cljs "0.8.237"]
+                 [reagent "0.6.0"]
+                 [com.cognitect/transit-cljs "0.8.239"]
                  [com.cemerick/url "0.1.1"]
-                 [org.clojure/core.async "0.2.374"]
-                 [org.webjars/bootstrap "4.0.0-alpha.2"]
+                 [org.clojure/core.async "0.2.391"]
+                 [org.webjars/bootstrap "4.0.0-alpha.3"]
                  ; trying to get bootstrap to work... get an error Uncaught Error: Bootstrap tooltips require Tether (http://github.hubspot.com/tether/)(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7
                  ; [cljsjs/tether "1.1.1-0"]
                  [domina "1.0.3"]]
