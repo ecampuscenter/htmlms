@@ -16,11 +16,14 @@
                  [org.webjars/bootstrap "4.0.0-alpha.3"]
                  ; trying to get bootstrap to work... get an error Uncaught Error: Bootstrap tooltips require Tether (http://github.hubspot.com/tether/)(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7
                  ; [cljsjs/tether "1.1.1-0"]
-                 [domina "1.0.3"]]
+                 [domina "1.0.3"]
+                 ; https://github.com/bhauman/devcards/issues/106
+                 [cljsjs/react-dom "0.14.3-1"]
+                 ]
 
 
-  :plugins [[lein-cljsbuild "1.1.1"]
-            [lein-figwheel "0.5.0-3"]]
+  :plugins [[lein-cljsbuild "1.1.4"]
+            [lein-figwheel "0.5.7"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                                     "target"]
