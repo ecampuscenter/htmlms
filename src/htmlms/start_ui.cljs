@@ -2,4 +2,5 @@
   "trying to get all the various webpages listed as seen on http://rigsomelight.com/devcards/#!/"
   (:require
     [htmlms.youtube]
-    [htmlms.tedtalks]))
+    [htmlms.tedtalks]
+    [htmlms.techsmithrelay]))
