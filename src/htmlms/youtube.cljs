@@ -158,11 +158,11 @@
   )
 
 
-(defn fluff [skinny width height length title]
+(defn fluff [skinny startTime width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
-<p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0\" frameBorder=\"0\" allowfullscreen></iframe></p>
+<p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0&start=" startTime "\" frameBorder=\"0\" allowfullscreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
-<a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
+<a href=\"" (str skinny "&t=" startTime) "\" title=\"" title "\" target=\"_blank\">"
 title "</a> (" length ")</p><p>Start the video to access more options in the video frame: to display the video captions, click <strong>CC</strong>. To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript, click YouTube, select ...More, then Transcript.</p>
 "))
 
@@ -184,12 +184,12 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
                             )
                           )}]))
 
-(defn htmlout [bmi-data param value width height min max length title]
+(defn htmlout [bmi-data param value startTime width height min max length title]
   (sab/html
 
     [:textarea {:cols      max
                 :rows      min
-                :value     (fluff value width height length title)
+                :value     (fluff value startTime width height length title)
                 :style     {:width "100%"}
                 :on-change (fn [e] (swap! bmi-data assoc param (.-target.value e))
                              (when (not= param :bmi)
@@ -199,14 +199,14 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
 
 
 
-(defn htmloutvisual [bmi-data param value width height min max length title]
+(defn htmloutvisual [bmi-data param value startTime width height min max length title]
   (sab/html
     [:div
      [:p {:style {:font-size ".8em"}} "Click the "
       [:strong "Play"] " icon to begin."]
      [:iframe {:width           width
                :height          height
-               :src             (ifriendly (str value "?rel=0"))
+               :src             (ifriendly (str value "?rel=0&start=" startTime))
                :frameborder     0
                :allowfullscreen nil
                :on-change       (fn [e] (swap! bmi-data assoc param (.-target.value e))
@@ -215,7 +215,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
 
 
      [:p {:style {:font-size ".8em"}} "If video doesn't appear, follow this direct link: "
-      [:a {:href   value
+      [:a {:href   (str value "&t=" startTime)
            :title  title
            :target "_blank"
            } title] " (" length ")"
@@ -236,7 +236,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
 
 (defn bmi-component [bmi-data]
   (println "@bmi-data: " @bmi-data)
-  (let [{:keys [width height bmi yurl length title]} (calc-bmi @bmi-data)
+  (let [{:keys [startTime width height bmi yurl length title]} (calc-bmi @bmi-data)
         [color diagnose] (cond
                            ;(and (> bmi 0) (< bmi 1)) ["green" (str "approx ratio: 16:9. exact ratio:")]
                            (and (> bmi .562) (< bmi .563)) ["green" (str "approx ratio: 16:9. exact ratio: " (width-ratio width height)  " by " (height-ratio width height) ".")]
@@ -247,8 +247,11 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
       [:div
        [:h3 "Parameters"]
        [:div
-        [:span (str "url: " yurl)]
-        (slider bmi-data :yurl  (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=") 0 100)]
+        [:span (str "url: " (str yurl "&t=" startTime))]
+        (slider bmi-data :yurl  (str (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=") "&t=" startTime) 0 100)]
+       [:div
+        [:span (str "start time: " (int startTime) "s")]
+        (slider bmi-data :startTime startTime 0 100)]
        [:div
         [:span (str "width: " (int width) "px")]
         (slider bmi-data :width width 30 150)]
@@ -269,18 +272,18 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
         (slider bmi-data :bmi bmi 10 50)]
        [:div
         [:span (str "html:")]
-        (htmlout bmi-data :yurl yurl width height 10 50 length title)]
+        (htmlout bmi-data :yurl yurl startTime width height 10 50 length title)]
 
        [:div
         [:span (str "preview:")]
-        (htmloutvisual bmi-data :yurl yurl width height 10 50 length title)]])))
+        (htmloutvisual bmi-data :yurl yurl startTime width height 10 50 length title)]])))
 
 
 
 (defcard YouTube
          ; see [devcards](https://github.com/bhauman/devcards) for deets
          (fn [data-atom _] (bmi-component data-atom))
-         {:height 315 :width 560 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" :title "Like I used to do.mp4"}
+         {:startTime 0 :height 315 :width 560 :yurl "https://www.youtube.com/watch?v=Wfj4g8zh2gk" :length "4m 16s" :title "Like I used to do.mp4"}
          {:inspect-data false
           :frame        true
           :history      true
