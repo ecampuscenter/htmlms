@@ -303,7 +303,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
 ;(.log js/console  (co/to-long (:initlength @initial-length)) )
 ;(.log js/console (def intervalobj (Interval.fromIsoString (:initlength @initial-length)) )  )
 ;(.log js/console  (.toIsoString intervalobj)  )
-;(.log js/console   intervalobj.minutes  )
+;(. js/console   intervalobj.minutes  )
 
 (defn main []
   ;; conditionally start the app based on wether the #main-app-area

@@ -3,4 +3,5 @@
   (:require
     [htmlms.youtube]
     [htmlms.tedtalks]
-    [htmlms.techsmithrelay]))
+    [htmlms.techsmithrelay]
+    [htmlms.vimeo]))
