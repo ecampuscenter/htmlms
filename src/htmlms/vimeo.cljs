@@ -7,7 +7,6 @@
     [cljs.reader :as reader]
     [domina :as domi]
     [domina.xpath :as x]
-    [domina.css :as c]
     ; for converting youtube duration
     [cemerick.url :as cu]
     [cljs.core.async :refer [chan close!]]
@@ -116,10 +115,26 @@
                             (xhr-data (str (get-id-from-url (.-target.value e)))
                                       (fn [g]
                                         ;(.log js/console (domi/text (c/sel (domi/html-to-dom g) "script[type=\"application/ld+json\"]")))
-                                        (.log js/console "title: " (first (domi/text (x/xpath g "//title"))) (rest (domi/text (x/xpath g "//title"))))
+                                        (.log js/console "new title: " (first (domi/text (x/xpath g "//title"))) (rest (domi/text (x/xpath g "//title"))))
+                                       ; (.log js/console "new dur: " (first (domi/text (x/xpath g "//script"))) (rest (domi/text (x/xpath g "//script"))))
+                                       ; (.log js/console "new duration: " (.-innerHTML (x/xpath g "/html/body/script[0]")))
+                                       ; (.log js/console "different xpath duration: " (domi/text (x/xpath g "//*[@id=\"wrap\"]/div[3]/script[2]")))
+                                       ; (.log js/console "sel: "  (x/xpath g "//*[@id=\"wrap\"]/div[3]/script[2]"))
+                                       ; (.log js/console "new time: " (re-find #"\"duration\":{\"raw\":\d*,\"formatted\":\"\d*:\d*\"" g))
+                                        (.log js/console "new time: "  (re-find #"\d+:\d+" (re-find #"\"formatted\":\"\d+:\d+\"" g)))
+
+                                        ;(.log js/console "dommy: " (.querySelectorAll js/document "script[type=\"application/ld+json\"]"))
+                                       ; (.log js/console "dommy: " (.querySelector js/document "script[type='application/ld+json']"))
+                                        ; (.log js/console "new duration get: " (domina/get-data (x/xpath g "/html/body/script[1]") "duration"))
+                                        ;(.log js/console "getting by dom: " (.getElementsByName js/document "html/body/script[1]"))
                                         (let [response (.-target g)
-                                              ; updlength (-> (get-in (t/read r (x/xpath g "/html/body/script[1]")) ["duration"]))
-                                              updlength 0
+                                              ;updlength (-> (get-in (t/read r (x/xpath g "//*[@id="wrap"]/div[3]/script[2]")) [0 "duration"]))
+                                              ;updlength (domi/text (x/xpath g "//*[@id=\"wrap\"]/div[3]/script[2]"))
+                                              ;updlength (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))
+                                              ;updlength (-> (get-in (t/read r g) [0 "duration"]))
+                                              updlength (re-find #"\d+:\d+" (re-find #"\"formatted\":\"\d+:\d+\"" g))
+                                              ;updlength (.toString (domi/text (x/xpath g "//script")))
+                                              ;updlength (-> (get-in (t/read r (x/xpath g "/html/body/script[1]")) [0 "duration"]))
                                               ; updtitle (domi/text (x/xpath g "/html/head/title[1]"))
                                               updtitle (.toString (domi/text (x/xpath g "//title")))
                                               ; (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))
@@ -147,6 +162,7 @@
                                           (swap! bmi-data assoc :length updlength)
                                           (swap! initial-length assoc :initlength updlength)
                                           (println ":initlength: " (:initlength @initial-length))
+                                          (.log js/console "updlength: " updlength)
 
                                           ; title
                                           (swap! bmi-data assoc :title updtitle)
@@ -156,6 +172,7 @@
                                           ;(println "can i get a new url? " (.-target.value e))
                                           ))))
                           (println "initial-length: " initial-length)
+
                           (when (not= param :bmi)
                             (println (str "param:" param))
                             (swap! bmi-data assoc :bmi nil)))}]))
@@ -163,15 +180,15 @@
 
 (defn ifriendly [url]
   "create iframible ted link"
-  (cs/replace-first (cs/replace-first (cs/replace-first url "www.ted.com/talks" "embed-ssl.ted.com/talks/lang/en") "https:" "") "http:" ""))
+  (cs/replace-first (cs/replace-first (cs/replace-first url "vimeo.com" "player.vimeo.com/video") "https:" "") "http:" ""))
 
 
 (defn fluff [skinny width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
-<p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "\" frameBorder=\"0\" scrolling=\"no\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></p>
+<p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "\" frameBorder=\"0\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
 <a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
-title "</a> (" length ")</p><p>Start the video to access more options in the video frame. To display the video captions, click on the <strong>gray speech bubble</strong> with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the <strong>Full Screen</strong> icon in the bottom right-hand corner or use the direct link above to open the video on the TED website. To navigate the video using the transcript, click <strong>Interactive Transcript</strong>.</p>
+title "</a> (" length ")</p><p>Start the video to access more options in the video frame. To display the video captions, click on the <strong>CC</strong> buton and choose the language you want the captions to be displayed in. To expand the video, use the <strong>Full Screen</strong> icon in the bottom right-hand corner or use the direct link above to open the video on the Vimeo website.</p>
 "))
 
 (defn get-data [bmi-data param value min max]
@@ -229,8 +246,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
            } title] " (" length ")"
       ]
      [:p {:style {:font-size ".8em"}} "Start the video to access more options in the video frame. To display the video captions,
-     click on the " [:strong "gray speech bubble"] " with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the " [:strong "Full Screen"] " icon in the bottom right-hand corner or use the direct link above to open the video on the TED website.
-     To navigate the video using the transcript, click " [:strong "Interactive Transcript"] "."]]))
+     click on the " [:strong "CC"] "  button and choose the language you want the captions to be displayed in. To expand the video, use the " [:strong "Full Screen"] " icon in the bottom right-hand corner or use the direct link above to open the video on the Vimeo website."]]))
 
 
 
@@ -288,7 +304,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
 (defcard Vimeo
          ;"see [devcards](https://github.com/bhauman/devcards) for deets"
          (fn [data-atom _] (bmi-component data-atom))
-         {:height 315 :width 560 :yurl "https://vimeo.com/10570139" :length "0m 22s" :title "“The Last 3 Minutes” Directed by Po Chan"}
+         {:height 360 :width 640 :yurl "https://vimeo.com/10570139" :length "00:22" :title "“The Last 3 Minutes” Directed by Po Chan"}
          {:inspect-data false
           :frame        true
           :history      true
