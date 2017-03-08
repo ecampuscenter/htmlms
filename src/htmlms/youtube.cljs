@@ -260,7 +260,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
       [:div
        [:h3 "Parameters"]
        [:div
-        [:span (str "url: " (str yurl "&t=" startTime))]
+        [:span (str "url: " (str (str (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=")) "&t=" startTime))]
         (slider bmi-data :yurl  (str (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=") "&t=" startTime) 0 100)]
        [:div
         [:span (str "start time: " (int startTime) "s")]
