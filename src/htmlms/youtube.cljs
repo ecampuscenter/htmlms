@@ -157,12 +157,25 @@
       )
   )
 
+(defn ialmostfriendly [url]
+  "create iframible youtube link for display http://stackoverflow.com/questions/20498831/refused-to-display-in-a-frame-because-it-set-x-frame-options-to-sameorigin"
+  ; need to fix this case https://youtu.be/SmM0653YvXU
+  ; it redirects to https://www.youtube.com/watch?v=SmM0653YvXU&feature=youtu.be
+  ; which breaks it becasue of the &feature=youtu.be
+  ;(cs/replace-first url "youtu.be/" "www.youtube.com/watch?v=")
+  ;(cs/replace-first (cs/replace-first url "watch?v=" "embed/") "https:" "")
+  (-> url
+      (cs/replace-first "youtu.be/" "www.youtube.com/watch?v=")
+      (cs/replace-first "https:" "")
+      )
+  )
+
 
 (defn fluff [skinny startTime width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0&start=" startTime "\" frameBorder=\"0\" allowfullscreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
-<a href=\"" (str skinny "&t=" startTime) "\" title=\"" title "\" target=\"_blank\">"
+<a href=\"" (str (ialmostfriendly skinny) "&t=" startTime) "\" title=\"" title "\" target=\"_blank\">"
 title "</a> (" length ")</p><p>Start the video to access more options in the video frame: to display the video captions, click <strong>CC</strong>. To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript, click YouTube, select ...More, then Transcript.</p>
 "))
 
@@ -215,7 +228,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
 
 
      [:p {:style {:font-size ".8em"}} "If video doesn't appear, follow this direct link: "
-      [:a {:href   (str value "&t=" startTime)
+      [:a {:href   (str (ialmostfriendly value) "&t=" startTime)
            :title  title
            :target "_blank"
            } title] " (" length ")"
