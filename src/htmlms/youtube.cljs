@@ -1,7 +1,8 @@
 (ns htmlms.youtube
   (:require
     #_[om.core :as om :include-macros true]
-    [reagent.core :as r]
+    [reagent.core :as reagent]
+    [reagent.dom.server :as server]
     [sablono.core :as sab :include-macros true]
     [clojure.string :as cs]
     [cognitect.transit :as t]
@@ -40,8 +41,8 @@
 
 
 
-(defonce initial-title (atom {:inittitle "Like I Used to Do.mp4"}))
-(defonce initial-length (atom {:initlength "0m 0s"}))
+(defonce initial-title (reagent/atom {:inittitle "Like I Used to Do.mp4"}))
+(defonce initial-length (reagent/atom {:initlength "0m 0s"}))
 (def intervalobj (Interval.fromIsoString (:initlength @initial-length)))
 
 
@@ -114,7 +115,7 @@
 
                                                                   ; (go
                                                                   (println "url: " value)
-                                                                  (println "can i get a new url? " (.-target.value e))
+                                                                  ; (println "can i get a new url? " (.-target.value e))
                                                                   ; (<! (timeout 100))
                                                                   (println "updlength: " updlength)
                                                                   ; (.log js/console "intervalobj: " intervalobj)
@@ -176,7 +177,7 @@
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "?rel=0&start=" startTime "\" frameBorder=\"0\" allowfullscreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
 <a href=\"" (str (ialmostfriendly skinny) "&t=" startTime) "\" title=\"" title "\" target=\"_blank\">"
-title "</a> (" length ")</p><p>Start the video to access more options in the video frame: to display the video captions, click <strong>CC</strong>. To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript, click YouTube, select ...More, then Transcript.</p>
+title "</a> (" length ")</p><p>Start the video to access more options in the video frame: to display the video captions, click <strong>CC</strong>. To expand the video, use the direct link above to open the video in YouTube, and click the Full Screen icon. To navigate the video using the transcript, click YouTube, select ...More, then Transcript.</p>
 "))
 
 (defn get-data [bmi-data param value min max]
@@ -234,7 +235,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
            } title] " (" length ")"
       ]
      [:p {:style {:font-size ".8em"}} "Start the video to access more options in the video frame: to display the video captions, click " [:strong "CC"] ". 
-     To expand the video, use the direct link above to open video in YouTube, and click the Full Screen icon. To navigate the video using the transcript,
+     To expand the video, use the direct link above to open the video in YouTube, and click the Full Screen icon. To navigate the video using the transcript,
      click YouTube, select ...More, then Transcript."]
      ]
     ))
@@ -322,7 +323,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
   ;; conditionally start the app based on wether the #main-app-area
   ;; node is on the page
   (if-let [node (.getElementById js/document "main-app-area")]
-    (js/React.render (sab/html [:div ""]) node)))
+    (js/ReactDOM.render (sab/html [:div ""]) node)))
 
 
 

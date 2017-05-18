@@ -316,7 +316,7 @@
   ;; conditionally start the app based on wether the #main-app-area
   ;; node is on the page
   (if-let [node (.getElementById js/document "main-app-area")]
-    (js/React.render (sab/html [:div ""]) node)))
+    (js/ReactDOM.render (sab/html [:div ""]) node)))
 
 
 
