@@ -108,15 +108,15 @@
              :on-change (fn [e]
                           (swap! bmi-data assoc param (.-target.value e))
                           ; also swap out new video length
-                          (if (= param :yurl) (xhr-data (str "https://boisestate.techsmithrelay.com/api/v1/media/"
+                          (if (= param :yurl) (xhr-data (str "https://boisestate.techsmithrelay.com/api/v2/media/"
                                                              (get-id-from-url (.-target.value e))
                                                              "/details")
                                                         ; (fn [g] (swap! initial-length update-in [:initlength] (-> (get-in (t/read r g) ["items" 0 "contentDetails" "duration"]))
                                                         (fn [g] (let [updlength (-> (get-in (t/read r g) ["Duration"])) updtitle (-> (get-in (t/read r g) ["Description"]))]
 
-                                                                  ; (go
+                                                                  ;(go
                                                                   (println "url: " value)
-                                                                  (println "can i get a new url? " (.-target.value e))
+                                                                 ;  (println "can i get a new url? " (.-target.value e))
                                                                   ; (<! (timeout 100))
                                                                   (println "updlength: " updlength)
                                                                   ; (.log js/console "intervalobj: " intervalobj)
@@ -327,7 +327,7 @@
 ;; http://localhost:3449/cards.html
 
 ;; api to TechSmith Relay to return duration... be sure to supply a key
-;; https://boisestate.techsmithrelay.com/api/v1/media/LnS3/details
+;; https://boisestate.techsmithrelay.com/api/v2/media/LnS3/details
 ;; {...
 ;;     "Description": "Stephen Hill Introduction",
 ;;     "Duration": "00:04:22.5070000",
