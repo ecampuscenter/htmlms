@@ -154,7 +154,8 @@
   (-> url
       (cs/replace-first "youtu.be/" "www.youtube.com/watch?v=")
       (cs/replace-first "watch?v=" "embed/")
-      (cs/replace-first "https:" "")
+      ; (cs/replace-first "https:" "")
+      (cs/replace-first "http:" "https:")
       )
   )
 
@@ -167,7 +168,8 @@
   ;(cs/replace-first (cs/replace-first url "watch?v=" "embed/") "https:" "")
   (-> url
       (cs/replace-first "youtu.be/" "www.youtube.com/watch?v=")
-      (cs/replace-first "https:" "")
+      ; (cs/replace-first "https:" "")
+      (cs/replace-first "http:" "https:")
       )
   )
 
@@ -261,8 +263,8 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
       [:div
        [:h3 "Parameters"]
        [:div
-        [:span (str "url: " (str (str (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=")) "&t=" startTime))]
-        (slider bmi-data :yurl  (str (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=") "&t=" startTime) 0 100)]
+        [:span (str "url: " (str (str (cs/replace-first (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=") "http:" "https:") ) "&t=" startTime))]
+        (slider bmi-data :yurl  (str (cs/replace-first (cs/replace-first yurl "youtu.be/" "www.youtube.com/watch?v=") "http:" "https:") "&t=" startTime) 0 100)]
        [:div
         [:span (str "start time: " (int startTime) "s")]
         (slider bmi-data :startTime startTime 0 100)]

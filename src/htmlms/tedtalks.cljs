@@ -44,10 +44,11 @@
 
 ; setting up ted talks plumbing to read the video length
 (defn get-id-from-url [u]
+  (.log js/console (str "47: u url: " u))
   "given a TED URL return the video’s ID"
   ; youtube
   ;(get (:query (cu/url u)) "v")
-  ; ted - for now just return original url... this might change if an API key is usesd.
+  ; ted - for now just return original url... this might change if an API key is used.
   u)
 
 (println (get-id-from-url "https://www.youtube.com/watch?v=Wfj4g8zh2gk"))
@@ -79,6 +80,8 @@
   (let [response (.-target event)]
     (.log js/console (.getResponseText response))))
 
+;(defn xhr-data [url cb]
+; "https://www.ted.com/talks/elizabeth_lesser_take_the_other_to_lunch"
 (defn xhr-data [url cb]
   (XhrIo.send (str url)
               (fn [f]
@@ -86,10 +89,13 @@
                   (cb (.getResponseText xhr))))))
 
 ; till i can figure out cross origin policy, close chrome and start chrome like this:
-; /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security
+; /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security --user-data-dir=/Volumes/SamsungSSD/Users/michaellopez/chromeuserdata
+; also allow flash on [*.]localhost
 ; alternatively load this chrome plugin https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi
 ; and addd exemptions for "*://www.ted.com/*" without the quotes. "*://localhost/* for testing...
+; use this xhr-data-ted to look at the content returned in case you need to update the length or title e.g. if ted modifies their site
 (defn xhr-data-ted [url content]
+   (.log js/console (str "url: " url))
   (XhrIo.send (str url) receiver "GET" content))
 
 
@@ -110,17 +116,91 @@
              :max       max
              :style     {:width "100%"}
              :on-change (fn [e]
+                          (.persist e)
                           (swap! bmi-data assoc param (.-target.value e))
                           ; also swap out new video length
                           (if (= param :yurl)
-                            (xhr-data (str (get-id-from-url (.-target.value e)))
+                            ;(xhr-data (str (get-id-from-url (.-target.value e)))
+                            ; for testing
+                            ; (xhr-data-ted (str "https://www.ted.com/talks/elizabeth_lesser_take_the_other_to_lunch")
+                            (xhr-data (str (.-target.value e))
                                       (fn [g]
+                                        ; (.log js/console  (domi/html-to-dom g))
+                                        (.log js/console "testing time")
+                                        (def lengthdom (domi/attr (x/xpath g "//*[@id=\"shoji\"]/div[2]/div/div[2]/div/meta[3]") "content"))
+                                        (.log js/console lengthdom)
+
+                                        ; works for https://www.ted.com/talks/elizabeth_lesser_take_the_other_to_lunch
+                                        ; not for https://www.ted.com/talks/teenaged_boy_wonders_play_bluegrass
+                                        ; the index of g shifted to 217 from 207
+                                       ; (def targetdom  (aget (.-childNodes (aget (domi/html-to-dom g) 207)) 3))
+                                       ; (def targetdom2 (aget (.-childNodes targetdom) 1))
+                                       ; (def targetdom3 (aget (.-childNodes targetdom2) 9))
+                                       ; (def targetdom4 (aget (.-childNodes targetdom3) 3))
+                                       ; (def targetdom5 (aget (.-childNodes targetdom4) 7))
+                                       ; (.log js/console (.-content targetdom5))
+
                                         (let [response (.-target g)
-                                              updlength (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/div/span[1]"))
-                                              updtitle (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/h1/div[2]/span"))]
+                                              ;updlength (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/div/span[1]"))
+                                              ;updtitle (domi/text (x/xpath g "//*[@id=\"player-hero\"]/div[1]/div[2]/h1/div[2]/span"))]
+
+                                              ; as of 20170907
+                                              ; test
+                                              ;updlength (domi/text "updlen")
+                                              ; prod
+                                              ; updlength (domi/text (x/xpath g "//*[@id=\"shoji\"]/div[2]/div/div[2]/div/meta[3]"))
+                                              ;updlength (.-content targetdom5)
+                                              updlength (str lengthdom)
+                                              ; test
+                                              ; updtitle (domi/text "updtitle")]
+                                              ; prod
+                                              ; updtitle (cs/replace-first (domi/text (x/xpath g "//title")) " | TED Talk" "")]
+                                              updtitle (domi/attr (x/xpath g "//*[@id=\"shoji\"]/div[2]/div/div[2]/div/meta[1]") "content")]
+
+
+
+
+                                          ;(.log js/console  "------you are starting here------")
+                                             ; (.log js/console (domi/text (x/xpath g "//title")))
+                                             ; (.log js/console (domi/text (x/xpath g "//meta[@property=\"video:duration\"]/@content")))
+                                             ;(.log js/console  (x/xpath g "//meta[@property=\"video:duration\"]/@content"))
+                                             ;(.log js/console  (x/xpath g "/html"))
+                                             ; (.log js/console  (domi/html-to-dom g))
+                                             ; (.log js/console  (aget (domi/html-to-dom g) 109))
+                                          ;(.log js/console (.-content (aget (domi/html-to-dom g) 109)))
+                                          ;(.log js/console (.-childNodes (aget (domi/html-to-dom g) 207)))
+
+                                          ;(.log js/console (aget (.-childNodes (aget (domi/html-to-dom g) 207)) 3))
+                                          ;(def targetdom  (aget (.-childNodes (aget (domi/html-to-dom g) 207)) 3))
+                                              ;(.log js/console (domi/html-to-dom (aget (.-childNodes (aget (domi/html-to-dom g) 207)) 3)))
+                                          ;(.log js/console (str (.-childNodes targetdom)))
+                                          ;(def targetdom2  (aget (.-childNodes targetdom ) 1))
+                                          ;(.log js/console (.-childNodes targetdom2))
+                                          ;(def targetdom3  (aget (.-childNodes targetdom2) 9))
+                                          ;(.log js/console (.-childNodes targetdom3))
+                                          ;(def targetdom4 (aget (.-childNodes targetdom3) 3))
+                                          ;(.log js/console (.-childNodes targetdom4))
+                                          ;(def targetdom5 (aget (.-childNodes targetdom4) 7))
+                                          ;(.log js/console (.-content targetdom5))
+
+                                          ;(.log js/console (.-childNodes (aget (domi/html-to-dom g) 207 )) 3)
+
+                                          ;(.log js/console (aget (.-childNodes (aget (domi/html-to-dom g) 207 )) 3) 3)
+                                          ;(.log js/console (aget (.-childNodes (aget (domi/html-to-dom g) 207 )) 3) 3)
+                                          ;(.log js/console (aget (.-childNodes (aget (domi/html-to-dom g) 207)) 3) 1 2)
+                                          ; (.log js/console (.-childNodes (.-childNodes (.-childNodes (.-childNodes (.-childNodes (aget (domi/html-to-dom g) 207)) 3) 1) 9) 3) 7)
+                                          ;(.log js/console (domi/text (x/xpath g "//*[@id=\"shoji\"]/div[2]/div/div[2]/div/meta[3]/@content")))
+
+                                          ; (.log js/console (first (domi/text (x/xpath g "//title"))) (rest (domi/text (x/xpath g "//title"))))
+                                          ; (.log js/console (domi/attr (x/xpath g "/html/head/meta[9]") "content"))
+                                          ; (.log js/console (first (domi/text (x/xpath g "//title"))) (rest (domi/text (x/xpath g "//title"))))
+                                          ;(.log js/console (domi/text (x/xpath g "//*[@id=\"shoji\"]/div[2]/div/div[2]/div/meta[itemprop=\"duration\"]")))
+                                          ;(.log js/console  "------you are finishing here------")
+
+                                          ;(println  (domi/text (x/xpath g "/html/head")))
 
                                           ; TED talk html
-                                          ; (.log js/console g)
+                                          ;(.log js/console (str "g: " response))
 
                                           ; video length xpath
                                           ; //*[@id="player-hero"]/div[1]/div[2]/div/span[1]
@@ -137,8 +217,8 @@
                                           ; hmm dont know where else to put this but I now see:
                                           ; <meta content='PT12M20S' itemprop='duration'>
                                           ; in view-source:http://www.ted.com/talks/daniel_levitin_how_to_stay_calm_when_you_know_you_ll_be_stressed
-
-                                          (swap! bmi-data assoc :length updlength)
+                                          (swap! bmi-data assoc :length (let [me (Interval.fromIsoString updlength)] (str (if (> me.hours 0) (str me.hours "h ") ) me.minutes "m " me.seconds "s")))
+                                          ;(swap! bmi-data assoc :length updlength)
                                           (swap! initial-length assoc :initlength updlength)
                                           (println ":initlength: " (:initlength @initial-length))
 
@@ -147,7 +227,7 @@
 
                                           ; (println "response: " response)
                                           ; (println "url: " value)
-                                          ;(println "can i get a new url? " (.-target.value e))
+                                          (println "can i get a new url? " (.-target.value e))
                                           ))))
                           (println "initial-length: " initial-length)
                           (when (not= param :bmi)
@@ -157,14 +237,15 @@
 
 (defn ifriendly [url]
   "create iframible ted link"
-  (cs/replace-first (cs/replace-first (cs/replace-first url "www.ted.com/talks" "embed-ssl.ted.com/talks/lang/en") "https:" "") "http:" ""))
+  (.log js/console (str "ifriendlyurl: " url))
+  (cs/replace-first (cs/replace-first url "www.ted.com/talks" "embed-ssl.ted.com/talks") "http:" "https:"))
 
 
 (defn fluff [skinny width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "\" frameBorder=\"0\" scrolling=\"no\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
-<a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
+<a href=\"" (cs/replace-first skinny "http:" "https:") "\" title=\"" title "\" target=\"_blank\">"
 title "</a> (" length ")</p><p>Start the video to access more options in the video frame. To display the video captions, click on the <strong>gray speech bubble</strong> with three dots in the center and choose the language you want the captions to be displayed in. To expand the video, use the <strong>Full Screen</strong> icon in the bottom right-hand corner or use the direct link above to open the video on the TED website. To navigate the video using the transcript, click <strong>Interactive Transcript</strong>.</p>
 "))
 
@@ -199,7 +280,7 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
 
 
 
-
+; todo can i take the ?rel=0 out -- done
 
 (defn htmloutvisual [bmi-data param value width height min max length title]
   (sab/html
@@ -208,9 +289,9 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
       [:strong "Play"] " icon to begin."]
      [:iframe {:width           width
                :height          height
-               :src             (ifriendly (str value "?rel=0"))
-               :frameborder     0
-               :allowfullscreen nil
+               :src             (ifriendly (str value))
+               :frameBorder     0
+               :allowFullScreen nil
                :on-change       (fn [e] (swap! bmi-data assoc param (.-target.value e))
                                   (when (not= param :bmi)
                                     (swap! bmi-data assoc :bmi nil)))}]
@@ -249,8 +330,8 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
       [:div
        [:h3 "Parameters"]
        [:div
-        [:span (str "url: " yurl)]
-        (slider bmi-data :yurl yurl 0 100)]
+        [:span (str "url: " (cs/replace-first yurl "http:" "https:"))]
+        (slider bmi-data :yurl (cs/replace-first yurl "http:" "https:") 0 100)]
        [:div
         [:span (str "width: " (int width) "px")]
         (slider bmi-data :width width 30 150)]

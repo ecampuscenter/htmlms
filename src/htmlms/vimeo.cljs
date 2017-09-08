@@ -180,14 +180,14 @@
 
 (defn ifriendly [url]
   "create iframible ted link"
-  (cs/replace-first (cs/replace-first (cs/replace-first url "vimeo.com" "player.vimeo.com/video") "https:" "") "http:" ""))
+  (cs/replace-first (cs/replace-first url "vimeo.com" "player.vimeo.com/video")  "http:" "https:"))
 
 
 (defn fluff [skinny width height length title]
   (str "<p>Click the <strong>Play</strong> icon to begin.</p>
 <p><iframe width=\"" width "\" height=\"" height "\" src=\"" (ifriendly skinny) "\" frameBorder=\"0\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe></p>
 <p>If video doesn't appear, follow this direct link:
-<a href=\"" skinny "\" title=\"" title "\" target=\"_blank\">"
+<a href=\"" (cs/replace-first skinny "http:" "https:") "\" title=\"" title "\" target=\"_blank\">"
 title "</a> (" length ")</p><p>Start the video to access more options in the video frame. To display the video captions, click on the <strong>CC</strong> buton and choose the language you want the captions to be displayed in. To expand the video, use the <strong>Full Screen</strong> icon in the bottom right-hand corner or use the direct link above to open the video on the Vimeo website.</p>
 "))
 
@@ -271,8 +271,8 @@ title "</a> (" length ")</p><p>Start the video to access more options in the vid
       [:div
        [:h3 "Parameters"]
        [:div
-        [:span (str "url: " yurl)]
-        (slider bmi-data :yurl yurl 0 100)]
+        [:span (str "url: " (cs/replace-first yurl "http:" "https:"))]
+        (slider bmi-data :yurl (cs/replace-first yurl "http:" "https:") 0 100)]
        [:div
         [:span (str "width: " (int width) "px")]
         (slider bmi-data :width width 30 150)]
