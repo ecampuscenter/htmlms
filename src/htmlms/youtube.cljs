@@ -27,6 +27,7 @@
     ; lein figwheel
     ; [devcards.core :as dc :refer [defcard deftest]]
     ; lein cljsbuild once hostedcards
+    ; then copy htmlms/resources/public/js to ecampuscenter.github.io/js
     [devcards.core :refer [defcard]])
 
   (:import [goog.net XhrIo]

@@ -55,7 +55,7 @@
   (cs/replace-first u "https://boisestate.techsmithrelay.com/" ""))
 
 
-  (println (get-id-from-url "https://boisestate.techsmithrelay.com/TB3U"))
+  ;(println (get-id-from-url "https://boisestate.techsmithrelay.com/TB3U"))
 
 
 (def r (t/reader :json))
@@ -162,7 +162,7 @@
   ; (cs/replace-first url "https:" "")
   (-> url
       (cs/replace-first "boisestate.techsmithrelay.com/" "boisestate.techsmithrelay.com/connector/embed/index/")
-      (cs/replace-first "https:" "")
+      ; (cs/replace-first "https:" "")
       )
   )
 
