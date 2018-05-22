@@ -4,25 +4,25 @@
   :license {:name "Creative Commons Attribution 4.0 International License"
             :url "http://creativecommons.org/licenses/by/4.0/"}
 
-  :dependencies [ [org.clojure/clojure "1.9.0-alpha16"]
+  :dependencies [ [org.clojure/clojure "1.9.0"]
                  #_[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.542"]
-                 [devcards "0.2.3" :exclusions [cljsjs/react cljsjs/react-dom]]
-                 [sablono "0.8.0"]
+                 [org.clojure/clojurescript "1.10.238"]
+                 [devcards "0.2.4" :exclusions [cljsjs/react cljsjs/react-dom]]
+                 [sablono "0.8.3"]
                  #_[org.omcljs/om "0.9.0"]
-                 [com.cognitect/transit-cljs "0.8.239"]
+                 [com.cognitect/transit-cljs "0.8.256"]
                  [com.cemerick/url "0.1.1"]
-                 [org.clojure/core.async "0.3.442"]
-                 [org.webjars/bootstrap "4.0.0-alpha.6-1"]
+                 [org.clojure/core.async "0.4.474"]
+                 [org.webjars/bootstrap "4.0.0-2"]
                  ; trying to get bootstrap to work... get an error Uncaught Error: Bootstrap tooltips require Tether (http://github.hubspot.com/tether/)(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7(anonymous function) @ bootstrap.min.js:7
                  ; [cljsjs/tether "1.1.1-0"]
                  [domina "1.0.3"]
                  ; https://github.com/bhauman/devcards/issues/106
-                 [cljsjs/react-dom "15.5.0-0" :exclusions [cljsjs/react]]
-                 [cljsjs/react-dom-server "15.5.0-0" :exclusions [cljsjs/react]]
-                 [cljsjs/react-with-addons "15.5.0-0"]
+                 [cljsjs/react-dom "16.3.0-1" :exclusions [cljsjs/react]]
+                 [cljsjs/react-dom-server "16.3.0-1" :exclusions [cljsjs/react]]
+                 [cljsjs/react-with-addons "15.6.1-0"]
                  #_[reagent "0.6.1" :exclusions [cljsjs/react cljsjs/react-dom-server]]
-                 [reagent "0.6.1" :exclusions [cljsjs/react]]
+                 [reagent "0.7.0" :exclusions [cljsjs/react]]
                  ]
 
   :jvm-opts ^:replace ["-Xmx1g" "-server" "--add-modules=java.se.ee"]
